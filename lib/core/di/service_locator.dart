@@ -40,14 +40,15 @@ Future<void> init() async {
   sl.registerFactory(() => ProductCubit(getProductsByStoreUsecase: sl()));
 
   // CartBloc (Singleton - فقط یک نمونه در کل برنامه)
+  // CartBloc (Singleton)
   sl.registerLazySingleton(
     () => CartBloc(
       getCart: sl(),
       addProductToCart: sl(),
       removeProductFromCart: sl(),
+      updateProductQuantity: sl(), // <-- افزودن UseCase جدید
     ),
   );
-
   // UseCases (Lazy Singleton - فقط یک بار ساخته می‌شوند)
   sl.registerLazySingleton(() => GetCustomerDetails(sl()));
   sl.registerLazySingleton(() => GetStoresUsecase(sl()));

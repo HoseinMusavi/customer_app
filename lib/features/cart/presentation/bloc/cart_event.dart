@@ -31,3 +31,16 @@ class CartProductRemoved extends CartEvent {
   @override
   List<Object> get props => [product];
 }
+
+class CartProductQuantityUpdated extends CartEvent {
+  final ProductEntity product;
+  final int newQuantity;
+
+  const CartProductQuantityUpdated({
+    required this.product,
+    required this.newQuantity,
+  });
+
+  @override
+  List<Object> get props => [product, newQuantity];
+}
