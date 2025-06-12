@@ -2,9 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shimmer/shimmer.dart'; // <--- مطمئن شوید این import وجود دارد
+import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/di/service_locator.dart';
+import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../domain/entities/product_entity.dart';
 import '../cubit/product_cubit.dart';
 
@@ -27,7 +28,7 @@ class ProductListPage extends StatelessWidget {
         child: BlocBuilder<ProductCubit, ProductState>(
           builder: (context, state) {
             if (state is ProductLoading) {
-              return _buildLoadingShimmer(); // حالت لودینگ جدید
+              return _buildLoadingShimmer();
             } else if (state is ProductLoaded) {
               if (state.products.isEmpty) {
                 return const Center(
@@ -42,7 +43,7 @@ class ProductListPage extends StatelessWidget {
                 },
               );
             } else if (state is ProductError) {
-              return _buildErrorView(context, state.message); // حالت خطای جدید
+              return _buildErrorView(context, state.message);
             }
             return const SizedBox.shrink();
           },
@@ -66,7 +67,12 @@ class ProductListPage extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(width: 90, height: 90, color: Colors.white),
+                  Container(
+                    width: 90,
+                    height: 90,
+                    color: Colors.white,
+                    child: ClipRRect(borderRadius: BorderRadius.circular(8.0)),
+                  ),
                   const SizedBox(width: 16),
                   Expanded(
                     child: Column(
@@ -127,7 +133,7 @@ class ProductListPage extends StatelessWidget {
             const SizedBox(width: 16),
             Expanded(
               child: SizedBox(
-                height: 90, // هم‌اندازه کردن ارتفاع با عکس
+                height: 90,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -162,7 +168,20 @@ class ProductListPage extends StatelessWidget {
                         ),
                         IconButton(
                           onPressed: () {
-                            /* منطق افزودن به سبد خرید */
+                            context.read<CartBloc>().add(
+                              CartProductAdded(product),
+                            );
+                            ScaffoldMessenger.of(context)
+                              ..hideCurrentSnackBar()
+                              ..showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    '${product.name} به سبد خرید اضافه شد',
+                                  ),
+                                  duration: const Duration(seconds: 2),
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
                           },
                           icon: Icon(
                             Icons.add_shopping_cart,

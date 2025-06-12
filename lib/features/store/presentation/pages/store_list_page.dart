@@ -1,5 +1,6 @@
 // lib/features/store/presentation/pages/store_list_page.dart
 
+import 'package:customer_app/features/cart/presentation/pages/cart_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
@@ -19,23 +20,22 @@ class StoreListPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('فروشگاه‌ها'),
         actions: [
-          // ویجت برای نمایش آیکون و تعداد آیتم‌های سبد خرید
           BlocBuilder<CartBloc, CartState>(
             builder: (context, cartState) {
               return Padding(
                 padding: const EdgeInsets.only(right: 8.0, left: 8.0),
                 child: Badge(
-                  label: Text(
-                    (cartState is CartLoaded)
-                        ? cartState.cart.totalItems.toString()
-                        : '0',
-                  ),
-                  isLabelVisible:
-                      (cartState is CartLoaded) &&
-                      cartState.cart.totalItems > 0,
+                  // ... (بقیه کد Badge)
                   child: IconButton(
                     onPressed: () {
-                      // TODO: در آینده به صفحه سبد خرید منتقل می‌شویم
+                      // +++ تغییر اصلی اینجاست +++
+                      // با کلیک، به صفحه سبد خرید منتقل می‌شویم
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const CartPage(),
+                        ),
+                      );
                     },
                     icon: const Icon(Icons.shopping_cart_outlined),
                   ),
