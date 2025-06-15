@@ -8,13 +8,16 @@ import 'package:equatable/equatable.dart';
 import '../../../../../core/error/failure.dart';
 import '../../../../../core/usecase/usecase.dart';
 
-class UpdateProductQuantityUsecase implements UseCase<CartEntity, Params> {
+class UpdateProductQuantityUsecase
+    implements UseCase<CartEntity, UpdateProductQuantityParams> {
   final CartRepository repository;
 
   UpdateProductQuantityUsecase(this.repository);
 
   @override
-  Future<Either<Failure, CartEntity>> call(Params params) async {
+  Future<Either<Failure, CartEntity>> call(
+    UpdateProductQuantityParams params,
+  ) async {
     return await repository.updateProductQuantity(
       params.product,
       params.newQuantity,
@@ -22,11 +25,14 @@ class UpdateProductQuantityUsecase implements UseCase<CartEntity, Params> {
   }
 }
 
-class Params extends Equatable {
+class UpdateProductQuantityParams extends Equatable {
   final ProductEntity product;
   final int newQuantity;
 
-  const Params({required this.product, required this.newQuantity});
+  const UpdateProductQuantityParams({
+    required this.product,
+    required this.newQuantity,
+  });
 
   @override
   List<Object> get props => [product, newQuantity];

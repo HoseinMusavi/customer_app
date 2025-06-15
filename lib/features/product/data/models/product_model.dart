@@ -5,6 +5,8 @@ import '../../domain/entities/product_entity.dart';
 class ProductModel extends ProductEntity {
   const ProductModel({
     required super.id,
+    required super.storeId,
+    required super.storeName,
     required super.name,
     required super.description,
     required super.price,
@@ -16,6 +18,8 @@ class ProductModel extends ProductEntity {
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
       id: json['id'],
+      storeId: json['store_id'],
+      storeName: json['store_name'],
       name: json['name'],
       description:
           json['description'] ?? '', // اگر توضیحات نداشت، رشته خالی در نظر بگیر
@@ -28,6 +32,8 @@ class ProductModel extends ProductEntity {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'store_id': storeId,
+      'store_name': storeName,
       'name': name,
       'description': description,
       'price': price,

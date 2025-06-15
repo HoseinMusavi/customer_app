@@ -20,22 +20,28 @@ class FakeProductRepositoryImpl implements ProductRepository {
     switch (storeId) {
       case 1: // منوی فست فود آلفا
         return Right([
-          ProductEntity(
+          const ProductEntity(
             id: 101,
+            storeId: 1,
+            storeName: 'فست فود آلفا',
             name: 'چیزبرگر کلاسیک',
             description: '۱۵۰ گرم گوشت گوساله، پنیر گودا، کاهو، گوجه، خیارشور',
             price: 185000,
             imageUrl: imageUrl,
           ),
-          ProductEntity(
+          const ProductEntity(
             id: 102,
+            storeId: 1,
+            storeName: 'فست فود آلفا',
             name: 'سیب زمینی سرخ کرده',
             description: 'سیب زمینی خلالی سرخ شده همراه با ادویه مخصوص',
             price: 75000,
             imageUrl: imageUrl,
           ),
-          ProductEntity(
+          const ProductEntity(
             id: 103,
+            storeId: 1,
+            storeName: 'فست فود آلفا',
             name: 'سالاد سزار',
             description: 'کاهو، نان تست، سس سزار، فیله مرغ گریل شده',
             price: 120000,
@@ -44,56 +50,43 @@ class FakeProductRepositoryImpl implements ProductRepository {
         ]);
       case 2: // منوی پیتزا بتا
         return Right([
-          ProductEntity(
+          const ProductEntity(
             id: 201,
+            storeId: 2,
+            storeName: 'پیتزا بتا',
             name: 'پیتزا پپرونی',
             description: 'خمیر ایتالیایی، سس مخصوص، پنیر موزارلا، پپرونی تند',
             price: 220000,
             imageUrl: imageUrl,
           ),
-          ProductEntity(
+          const ProductEntity(
             id: 202,
+            storeId: 2,
+            storeName: 'پیتزا بتا',
             name: 'پاستا آلفردو',
             description: 'پنه، سس آلفردو، فیله مرغ، قارچ، جعفری',
             price: 195000,
             imageUrl: imageUrl,
           ),
-          ProductEntity(
-            id: 203,
-            name: 'نان سیر',
-            description: 'نان باگت تست شده با کره، سیر و جعفری',
-            price: 65000,
-            imageUrl: imageUrl,
-          ),
-          ProductEntity(
-            id: 204,
-            name: 'موهیتو',
-            description: 'نعنا تازه، لیمو، سودا',
-            price: 80000,
-            imageUrl: imageUrl,
-          ),
         ]);
       default: // منوی کافه گاما (برای بقیه فروشگاه‌ها)
         return Right([
-          ProductEntity(
+          const ProductEntity(
             id: 301,
+            storeId: 3,
+            storeName: 'کافه گاما',
             name: 'قهوه لاته',
             description: 'یک شات اسپرسو به همراه شیر بخار داده شده',
             price: 90000,
             imageUrl: imageUrl,
           ),
-          ProductEntity(
+          const ProductEntity(
             id: 302,
+            storeId: 3,
+            storeName: 'کافه گاما',
             name: 'چیزکیک نیویورکی',
             description: 'کیک پنیر پخته شده با سس توت فرنگی',
             price: 110000,
-            imageUrl: imageUrl,
-          ),
-          ProductEntity(
-            id: 303,
-            name: 'اسموتی بری',
-            description: 'ترکیب میوه‌های جنگلی، ماست و عسل',
-            price: 125000,
             imageUrl: imageUrl,
           ),
         ]);
