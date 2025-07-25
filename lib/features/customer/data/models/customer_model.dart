@@ -1,6 +1,7 @@
 // lib/features/customer/data/models/customer_model.dart
 
 import '../../domain/entities/customer_entity.dart';
+import 'address_model.dart'; // ایمپورت مدل آدرس
 
 class CustomerModel extends CustomerEntity {
   const CustomerModel({
@@ -9,22 +10,27 @@ class CustomerModel extends CustomerEntity {
     required super.email,
     required super.phone,
     super.avatarUrl,
+    required super.addresses,
+    super.defaultAddressId,
   });
 
-  /// یک Factory constructor که یک نقشه (Map) از نوع JSON را می‌گیرد
-  /// و یک نمونه از CustomerModel را برمی‌گرداند.
   factory CustomerModel.fromJson(Map<String, dynamic> json) {
+    // تبدیل لیست جیسان آدرس‌ها به لیست مدل‌های آدرس
+    var addressList = (json['addresses'] as List)
+        .map((addressJson) => AddressModel.fromJson(addressJson))
+        .toList();
+
     return CustomerModel(
       id: json['id'],
       fullName: json['full_name'],
       email: json['email'],
       phone: json['phone'],
-      avatarUrl: json['avatar_url'], // فرض می‌کنیم کلید در JSON به این شکل است
+      avatarUrl: json['avatar_url'],
+      addresses: addressList,
+      defaultAddressId: json['default_address_id'],
     );
   }
 
-  /// متدی که نمونه فعلی CustomerModel را به یک نقشه (Map) از نوع JSON تبدیل می‌کند.
-  /// این متد برای ارسال داده به سرور (مثلا در درخواست‌های POST یا PUT) کاربرد دارد.
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -32,6 +38,11 @@ class CustomerModel extends CustomerEntity {
       'email': email,
       'phone': phone,
       'avatar_url': avatarUrl,
+      // برای تبدیل به جیسون، مدل‌های آدرس را به جیسون تبدیل می‌کنیم
+      'addresses': addresses
+          .map((address) => (address as AddressModel).toJson())
+          .toList(),
+      'default_address_id': defaultAddressId,
     };
   }
 }

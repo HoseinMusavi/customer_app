@@ -9,9 +9,9 @@ class FakeStoreRepositoryImpl implements StoreRepository {
   @override
   Future<Either<Failure, List<StoreEntity>>> getStores() async {
     // شبیه‌سازی تاخیر شبکه
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 1));
 
-    // ایجاد یک لیست ساختگی از فروشگاه‌ها
+    // ایجاد یک لیست ساختگی از فروشگاه‌ها با فیلدهای جدید
     final List<StoreEntity> fakeStores = [
       const StoreEntity(
         id: 1,
@@ -20,6 +20,10 @@ class FakeStoreRepositoryImpl implements StoreRepository {
         isOpen: true,
         logoUrl:
             'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT2rQ9Ryl-ju-wxVjyNg458bnF4cUPkEOUrb5m46K5P5hSWDS7rWV68CRHJ8uKxQO6MB2M&usqp=CAU',
+        rating: 4.5,
+        ratingCount: 250,
+        cuisineType: 'فست فود',
+        deliveryTimeEstimate: '۲۰-۳۰ دقیقه',
       ),
       const StoreEntity(
         id: 2,
@@ -28,14 +32,21 @@ class FakeStoreRepositoryImpl implements StoreRepository {
         isOpen: false,
         logoUrl:
             'https://besazobechin.com/Files/Uploads/1399-12-6/1399-12-6-ad02b9e3-f5bb-490f-8543-2191cc706d50.webp',
+        rating: 4.2,
+        ratingCount: 180,
+        cuisineType: 'پیتزا',
+        deliveryTimeEstimate: '۳۰-۴۵ دقیقه',
       ),
       const StoreEntity(
         id: 3,
         name: 'کافه گاما',
         address: 'بلوار فرعی، کوچه ۳',
         isOpen: true,
-        logoUrl:
-            'https://besazobechin.com/Files/Uploads/1399-12-6/1399-12-6-ad02b9e3-f5bb-490f-8543-2191cc706d50.webp',
+        logoUrl: null, // تست لوگوی خالی
+        rating: 4.8,
+        ratingCount: 320,
+        cuisineType: 'کافه',
+        deliveryTimeEstimate: '۱۵-۲۵ دقیقه',
       ),
       const StoreEntity(
         id: 4,
@@ -44,61 +55,13 @@ class FakeStoreRepositoryImpl implements StoreRepository {
         isOpen: true,
         logoUrl:
             'https://besazobechin.com/Files/Uploads/1399-12-6/1399-12-6-ad02b9e3-f5bb-490f-8543-2191cc706d50.webp',
-      ),
-      const StoreEntity(
-        id: 5,
-        name: 'ساندویچی اپسیلون',
-        address: 'خیابان آزادی، پلاک ۲۲',
-        isOpen: false,
-        logoUrl:
-            'https://besazobechin.com/Files/Uploads/1399-12-6/1399-12-6-ad02b9e3-f5bb-490f-8543-2191cc706d50.webp',
-      ),
-      const StoreEntity(
-        id: 6,
-        name: 'کافی‌شاپ زتا',
-        address: 'خیابان ولیعصر، کوچه ۱۰',
-        isOpen: true,
-        logoUrl:
-            'https://besazobechin.com/Files/Uploads/1399-12-6/1399-12-6-ad02b9e3-f5bb-490f-8543-2191cc706d50.webp',
-      ),
-      const StoreEntity(
-        id: 7,
-        name: 'رستوران اتا',
-        address: 'میدان ونک، پلاک ۷',
-        isOpen: false,
-        logoUrl:
-            'https://besazobechin.com/Files/Uploads/1399-12-6/1399-12-6-ad02b9e3-f5bb-490f-8543-2191cc706d50.webp',
-      ),
-      const StoreEntity(
-        id: 8,
-        name: 'فست فود تتا',
-        address: 'خیابان شریعتی، پلاک ۸۸',
-        isOpen: true,
-        logoUrl:
-            'https://besazobechin.com/Files/Uploads/1399-12-6/1399-12-6-ad02b9e3-f5bb-490f-8543-2191cc706d50.webp',
-      ),
-      const StoreEntity(
-        id: 9,
-        name: 'کافه یوتا',
-        address: 'خیابان مطهری، پلاک ۹۹',
-        isOpen: true,
-        logoUrl:
-            'https://besazobechin.com/Files/Uploads/1399-12-6/1399-12-6-ad02b9e3-f5bb-490f-8543-2191cc706d50.webp',
-      ),
-      const StoreEntity(
-        id: 10,
-        name: 'رستوران کاف',
-        address: 'خیابان فردوسی، پلاک ۱۲۰',
-        isOpen: false,
-        logoUrl:
-            'https://besazobechin.com/Files/Uploads/1399-12-6/1399-12-6-ad02b9e3-f5bb-490f-8543-2191cc706d50.webp',
+        rating: 4.0,
+        ratingCount: 500,
+        cuisineType: 'ایرانی',
+        deliveryTimeEstimate: '۳۵-۵۰ دقیقه',
       ),
     ];
 
-    // برگرداندن داده‌های ساختگی در حالت موفقیت
     return Right(fakeStores);
-
-    // برای تست حالت خطا می‌توانید خط بالا را کامنت و خط زیر را فعال کنید
-    // return Left(ServerFailure());
   }
 }

@@ -10,25 +10,27 @@ class ProductModel extends ProductEntity {
     required super.name,
     required super.description,
     required super.price,
+    super.discountPrice,
     required super.imageUrl,
+    required super.category,
+    required super.isAvailable,
   });
 
-  /// یک Factory constructor که یک نقشه (Map) از نوع JSON را می‌گیرد
-  /// و یک نمونه از ProductModel را برمی‌گرداند.
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
       id: json['id'],
       storeId: json['store_id'],
       storeName: json['store_name'],
       name: json['name'],
-      description:
-          json['description'] ?? '', // اگر توضیحات نداشت، رشته خالی در نظر بگیر
-      price: (json['price'] as num).toDouble(), // برای اطمینان از نوع double
+      description: json['description'] ?? '',
+      price: (json['price'] as num).toDouble(),
+      discountPrice: (json['discount_price'] as num?)?.toDouble(),
       imageUrl: json['image_url'],
+      category: json['category'],
+      isAvailable: json['is_available'],
     );
   }
 
-  /// متدی که نمونه فعلی ProductModel را به یک نقشه (Map) از نوع JSON تبدیل می‌کند.
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -37,7 +39,10 @@ class ProductModel extends ProductEntity {
       'name': name,
       'description': description,
       'price': price,
+      'discount_price': discountPrice,
       'image_url': imageUrl,
+      'category': category,
+      'is_available': isAvailable,
     };
   }
 }

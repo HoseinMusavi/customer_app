@@ -2,10 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import '../../../../core/di/service_locator.dart';
 import '../../domain/entities/customer_entity.dart';
 import '../cubit/customer_cubit.dart';
+import 'address_list_page.dart'; // ایمپورت صفحه جدید
 
 class CustomerProfilePage extends StatelessWidget {
   const CustomerProfilePage({super.key});
@@ -13,30 +13,18 @@ class CustomerProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('پروفایل مشتری'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      // BlocProvider وظیفه ساخت و ارائه Cubit به فرزندانش را دارد.
+      appBar: AppBar(title: const Text('پروفایل من')),
       body: BlocProvider(
-        // ما از سرویس لوکیتور (sl) برای گرفتن نمونه CustomerCubit استفاده می‌کنیم
-        // و بلافاصله تابع دریافت اطلاعات را با آیدی 1 (برای تست) فراخوانی می‌کنیم.
         create: (_) => sl<CustomerCubit>()..fetchCustomerDetails(1),
-
-        // BlocBuilder به تغییرات Cubit گوش می‌دهد و UI را بازسازی می‌کند.
         child: BlocBuilder<CustomerCubit, CustomerState>(
           builder: (context, state) {
-            // بر اساس هر وضعیت، یک ویجت متفاوت نمایش می‌دهیم.
             if (state is CustomerLoading || state is CustomerInitial) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is CustomerLoaded) {
-              // اگر داده با موفقیت لود شد، ویجت نمایش پروفایل را برمی‌گردانیم.
-              return _buildProfileView(context, state.customer);
+              return _buildProfileMenu(context, state.customer);
             } else if (state is CustomerError) {
-              // اگر خطا رخ داد، پیام خطا را نمایش می‌دهیم.
               return Center(child: Text(state.message));
             }
-            // حالت پیش‌فرض
             return const SizedBox.shrink();
           },
         ),
@@ -44,16 +32,14 @@ class CustomerProfilePage extends StatelessWidget {
     );
   }
 
-  // یک ویجت کمکی برای نمایش زیبای اطلاعات پروفایل
-  Widget _buildProfileView(BuildContext context, CustomerEntity customer) {
-    return Center(
-      child: Card(
-        elevation: 4.0,
-        margin: const EdgeInsets.all(16.0),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
+  Widget _buildProfileMenu(BuildContext context, CustomerEntity customer) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return ListView(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 24.0),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
             children: [
               CircleAvatar(
                 radius: 50,
@@ -64,25 +50,73 @@ class CustomerProfilePage extends StatelessWidget {
                     ? const Icon(Icons.person, size: 50)
                     : null,
               ),
-              const SizedBox(height: 24),
-              Text(
-                customer.fullName,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
               const SizedBox(height: 12),
               Text(
-                customer.email,
-                style: Theme.of(context).textTheme.bodyLarge,
+                customer.fullName,
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Text(
-                customer.phone,
-                style: Theme.of(context).textTheme.bodyMedium,
+                customer.email,
+                style: textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
               ),
             ],
           ),
         ),
-      ),
+        const Divider(height: 1),
+        _buildMenuTile(
+          context,
+          icon: Icons.person_outline,
+          title: 'اطلاعات حساب',
+          onTap: () {}, // TODO: Navigate to edit profile page
+        ),
+        _buildMenuTile(
+          context,
+          icon: Icons.location_on_outlined,
+          title: 'آدرس‌های من',
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => AddressListPage(customer: customer),
+              ),
+            );
+          },
+        ),
+        _buildMenuTile(
+          context,
+          icon: Icons.history,
+          title: 'تاریخچه سفارشات',
+          onTap: () {}, // TODO: Navigate to order history page
+        ),
+        _buildMenuTile(
+          context,
+          icon: Icons.logout,
+          title: 'خروج از حساب',
+          color: Colors.red,
+          onTap: () {}, // TODO: Implement logout
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMenuTile(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    Color? color,
+  }) {
+    final titleColor = color ?? Theme.of(context).textTheme.bodyLarge?.color;
+    final iconColor = color ?? Colors.grey[600];
+
+    return ListTile(
+      leading: Icon(icon, color: iconColor),
+      title: Text(title, style: TextStyle(color: titleColor, fontSize: 16)),
+      onTap: onTap,
+      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
     );
   }
 }

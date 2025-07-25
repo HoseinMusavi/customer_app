@@ -1,5 +1,6 @@
 // lib/main.dart
 
+import 'package:customer_app/main_shell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -7,7 +8,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'core/di/service_locator.dart' as di;
 import 'core/theme/app_theme.dart';
 import 'features/cart/presentation/bloc/cart_bloc.dart';
-import 'features/store/presentation/pages/store_list_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +33,8 @@ class MyApp extends StatelessWidget {
           GlobalCupertinoLocalizations.delegate,
         ],
         theme: AppTheme.lightTheme,
-        home: const StoreListPage(),
+        // صفحه اصلی برنامه به MainShell تغییر کرد
+        home: const MainShell(),
       ),
     );
   }

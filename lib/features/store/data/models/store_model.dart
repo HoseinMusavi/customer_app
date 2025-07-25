@@ -9,21 +9,26 @@ class StoreModel extends StoreEntity {
     required super.address,
     super.logoUrl,
     required super.isOpen,
+    required super.rating,
+    required super.ratingCount,
+    required super.cuisineType,
+    required super.deliveryTimeEstimate,
   });
 
-  /// یک Factory constructor که یک نقشه (Map) از نوع JSON را می‌گیرد
-  /// و یک نمونه از StoreModel را برمی‌گرداند.
   factory StoreModel.fromJson(Map<String, dynamic> json) {
     return StoreModel(
-      id: json['store_id'], // بر اساس پروپوزال اولیه
+      id: json['store_id'],
       name: json['name'],
       address: json['address'],
       logoUrl: json['logo_url'],
       isOpen: json['is_open'],
+      rating: (json['rating'] as num).toDouble(),
+      ratingCount: json['rating_count'],
+      cuisineType: json['cuisine_type'],
+      deliveryTimeEstimate: json['delivery_time_estimate'],
     );
   }
 
-  /// متدی که نمونه فعلی StoreModel را به یک نقشه (Map) از نوع JSON تبدیل می‌کند.
   Map<String, dynamic> toJson() {
     return {
       'store_id': id,
@@ -31,6 +36,10 @@ class StoreModel extends StoreEntity {
       'address': address,
       'logo_url': logoUrl,
       'is_open': isOpen,
+      'rating': rating,
+      'rating_count': ratingCount,
+      'cuisine_type': cuisineType,
+      'delivery_time_estimate': deliveryTimeEstimate,
     };
   }
 }
