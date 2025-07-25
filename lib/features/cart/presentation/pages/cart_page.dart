@@ -1,8 +1,10 @@
-// lib/features/cart/presentation/pages/cart_page.dart
-
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+// <<< CHANGE START: افزودن ایمپورت برای ویجت تصویر امن
+import '../../../../core/widgets/custom_network_image.dart';
+// <<< CHANGE END
 import '../../domain/entities/cart_entity.dart';
 import '../../domain/entities/cart_item_entity.dart';
 import '../bloc/cart_bloc.dart';
@@ -36,7 +38,6 @@ class CartPage extends StatelessWidget {
               return _buildEmptyCartView(context);
             }
 
-            // --- منطق اصلی برای گروه‌بندی آیتم‌ها بر اساس نام فروشگاه ---
             final groupedByStore = groupBy(
               state.cart.items,
               (item) => item.product.storeName,
@@ -158,15 +159,16 @@ class _CartItemRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Row(
         children: [
+          // <<< CHANGE START: جایگزینی Image.network با ویجت امن
           ClipRRect(
             borderRadius: BorderRadius.circular(8.0),
-            child: Image.network(
-              item.product.imageUrl,
+            child: CustomNetworkImage(
+              imageUrl: item.product.imageUrl,
               width: 50,
               height: 50,
-              fit: BoxFit.cover,
             ),
           ),
+          // <<< CHANGE END
           const SizedBox(width: 12),
           Expanded(
             child: Column(

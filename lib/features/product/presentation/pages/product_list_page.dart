@@ -1,10 +1,12 @@
-// lib/features/product/presentation/pages/product_list_page.dart
-
+import 'package:customer_app/features/product/domain/entities/product_entity.dart'
+    as cart_entity;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/di/service_locator.dart';
+import '../../../../core/widgets/custom_network_image.dart';
+
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../domain/entities/product_entity.dart';
 import '../cubit/product_cubit.dart';
@@ -56,6 +58,15 @@ class ProductListPage extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final hasDiscount = product.discountPrice != null;
 
+    // خط دیباگ برای بررسی آدرس عکس
+    print('DEBUG: Loading Image from URL: ${product.imageUrl}');
+
+    // <<< CHANGE START: چک کردن معتبر بودن آدرس URL
+    final bool isUrlValid =
+        product.imageUrl.isNotEmpty &&
+        Uri.tryParse(product.imageUrl)?.hasAbsolutePath == true;
+    // <<< CHANGE END
+
     return Opacity(
       opacity: product.isAvailable ? 1.0 : 0.6,
       child: Container(
@@ -74,15 +85,25 @@ class ProductListPage extends StatelessWidget {
         ),
         child: Row(
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8.0),
-              child: Image.network(
-                product.imageUrl,
-                width: 90,
-                height: 90,
-                fit: BoxFit.cover,
+            // <<< CHANGE START: نمایش تصویر فقط در صورت معتبر بودن آدرس
+            SizedBox(
+              width: 90,
+              height: 90,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8.0),
+                child: isUrlValid
+                    ? CustomNetworkImage(imageUrl: product.imageUrl)
+                    : Container(
+                        // نمایش جایگزین در صورت نامعتبر بودن آدرس
+                        color: Colors.grey[200],
+                        child: Icon(
+                          Icons.image_not_supported_outlined,
+                          color: Colors.grey[400],
+                        ),
+                      ),
               ),
             ),
+            // <<< CHANGE END
             const SizedBox(width: 12),
             Expanded(
               child: SizedBox(
@@ -133,8 +154,20 @@ class ProductListPage extends StatelessWidget {
                         if (product.isAvailable)
                           InkWell(
                             onTap: () {
+                              final productForCart = cart_entity.ProductEntity(
+                                id: product.id,
+                                name: product.name,
+                                description: product.description,
+                                imageUrl: product.imageUrl,
+                                price: product.price,
+                                discountPrice: product.discountPrice,
+                                storeId: product.storeId,
+                                isAvailable: product.isAvailable,
+                                storeName: storeName,
+                                category: product.category,
+                              );
                               context.read<CartBloc>().add(
-                                CartProductAdded(product),
+                                CartProductAdded(productForCart),
                               );
                               ScaffoldMessenger.of(context)
                                 ..hideCurrentSnackBar()
@@ -178,12 +211,41 @@ class ProductListPage extends StatelessWidget {
   }
 
   Widget _buildLoadingShimmer() {
-    /* ... Loading Shimmer Code ... */
-    return Container();
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16.0),
+        itemCount: 6,
+        itemBuilder: (_, __) => Container(
+          margin: const EdgeInsets.only(bottom: 12.0),
+          height: 114,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildErrorView(BuildContext context, String message) {
-    /* ... Error View Code ... */
-    return Container();
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, color: Colors.red, size: 40),
+          const SizedBox(height: 8),
+          Text(message),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              context.read<ProductCubit>().fetchProductsByStore(storeId);
+            },
+            child: const Text('تلاش مجدد'),
+          ),
+        ],
+      ),
+    );
   }
 }
