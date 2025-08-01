@@ -2,30 +2,43 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/error/failure.dart';
 import '../../domain/entities/product_entity.dart';
 import '../../domain/repositories/product_repository.dart';
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failure.dart';
+import '../../domain/entities/product_entity.dart';
+import '../../domain/repositories/product_repository.dart';
 
 class FakeProductRepositoryImpl implements ProductRepository {
+  // آدرس‌های معتبر جایگزین شده‌اند
   static const String burgerImageUrl =
-      'https://calindairy.com/wp-content/uploads/2023/08/double-burger.webp'; // چیزبرگر مخصوص
+      'https://calindairy.com/wp-content/uploads/2023/08/double-burger.webp';
   static const String friesImageUrl =
-      'https://media.aamaaj.ir/2023/01/248419504_1280654395782243_8218209085093290956_n-1024x1024-1.jpg'; // سیب زمینی با پنیر
+      'https://media.aamaaj.ir/2023/01/248419504_1280654395782243_8218209085093290956_n-1024x1024-1.jpg';
+  // URL جایگزین برای دوغ
   static const String dooghImageUrl =
-      'https://sonnatkala.ir/mag/wp-content/uploads/2021/08/%D8%A2%D9%86%DA%86%DB%8C%D9%84%D8%A7%D8%AF%D8%A7-%D9%85%DA%A9%D8%B2%DB%8C%DA%A9%DB%8C.jpg'; // دوغ سنتی
+      'https://astepinto.com/wp-content/uploads/2022/07/Doogh-Abali-Glass-Bottle-1L-2.jpg';
+  // URL جایگزین برای پیتزا
   static const String pizzaImageUrl =
-      'https://shirazgolpar.com/wp-content/uploads/2024/08/%D8%A7%D8%AF%D9%88%DB%8C%D9%87-%D9%81%D8%B3%D8%AA-%D9%81%D9%88%D8%AF-.jpg'; // پیتزا مارگاریتا
+      'https://images.unsplash.com/photo-1513104890138-7c749659a591';
+  // URL جایگزین برای پیتزا پپرونی
   static const String pepperoniPizzaImageUrl =
-      'https://bestfarsi.ir/wp-content/uploads/Fried-chicken.jpg'; // پیتزا پپرونی
+      'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38';
   static const String saladImageUrl =
-      'https://www.chetor.com/wp-content/uploads/2018/12/healthlyfastfood.jpg'; // سالاد شیرازی
+      'https://www.chetor.com/wp-content/uploads/2018/12/healthlyfastfood.jpg';
   static const String teaImageUrl =
-      'https://cdn.yjc.ir/files/fa/news/1400/12/28/15809832_568.jpg'; // چای زعفرانی
+      'https://cdn.yjc.ir/files/fa/news/1400/12/28/15809832_568.jpg';
+  // URL جایگزین برای کیک زعفرانی
   static const String saffronCakeImageUrl =
-      'https://shirazgolpar.com/wp-content/uploads/2024/08/%D8%A7%D8%AF%D9%88%DB%8C%D9%87-%D9%81%D8%B3%D8%AA-%D9%81%D9%88%D8%AF-.jpg'; // کیک زعفرانی
+      'https://images.unsplash.com/photo-1607478900766-efe13248b125';
+  // URL جایگزین برای سکنجبین
   static const String sekkenjabinImageUrl =
-      'https://sonnatkala.ir/mag/wp-content/uploads/2021/08/%D8%A2%D9%86%DA%86%DB%8C%D9%84%D8%A7%D8%AF%D8%A7-%D9%85%DA%A9%D8%B2%DB%8C%DA%A9%DB%8C.jpg'; // شربت سکنجبین
+      'https://static.farakav.com/files/pictures/01570177.jpg';
+  // URL جایگزین برای کباب
   static const String kebabImageUrl =
-      'https://bestfarsi.ir/wp-content/uploads/Fried-chicken.jpg'; // چلوکباب سلطانی
+      'https://images.unsplash.com/photo-1517244683847-7456b63c5969';
   static const String zereshkPoloImageUrl =
-      'https://www.chetor.com/wp-content/uploads/2018/12/healthlyfastfood.jpg'; // زرشک پلو
+      'https://www.chetor.com/wp-content/uploads/2018/12/healthlyfastfood.jpg';
+
+  // ... بقیه کد بدون تغییر باقی می‌ماند ...
 
   final Map<int, List<ProductEntity>> _productsByStore = {
     1: [

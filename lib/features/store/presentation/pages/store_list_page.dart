@@ -1,8 +1,10 @@
 // lib/features/store/presentation/pages/store_list_page.dart
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import 'package:customer_app/features/promotion/domain/entities/promotion_entity.dart';
@@ -42,13 +44,21 @@ class _StoreListPageState extends State<StoreListPage> {
         create: (context) => sl<DashboardCubit>()..fetchDashboardData(),
         child: BlocBuilder<DashboardCubit, DashboardState>(
           builder: (context, state) {
+            // --- UX Improvement: Show skeleton loader on initial load ---
             if (state.status == DashboardStatus.loading &&
                 state.stores.isEmpty) {
-              return const Center(child: CircularProgressIndicator());
+              return _buildLoadingSkeleton();
             }
+
+            // --- UX Improvement: Show a user-friendly error widget with a retry button ---
             if (state.status == DashboardStatus.failure) {
-              return Center(child: Text(state.errorMessage ?? 'خطایی رخ داد'));
+              return _buildErrorWidget(
+                message: state.errorMessage ?? 'خطا در برقراری ارتباط با سرور',
+                onRetry: () =>
+                    context.read<DashboardCubit>().fetchDashboardData(),
+              );
             }
+
             return RefreshIndicator(
               onRefresh: () async =>
                   context.read<DashboardCubit>().fetchDashboardData(),
@@ -57,10 +67,16 @@ class _StoreListPageState extends State<StoreListPage> {
                   _buildSliverAppBar(context),
                   _buildSectionTitle('دسته‌بندی‌ها'),
                   _buildCategoriesSliver(),
-                  _buildSectionTitle('پیشنهادهای ویژه'),
-                  _buildPromotionsSliver(context, state.promotions),
+                  if (state.promotions.isNotEmpty) ...[
+                    _buildSectionTitle('پیشنهادهای ویژه'),
+                    _buildPromotionsSliver(context, state.promotions),
+                  ],
                   _buildSectionTitle('همه فروشگاه‌ها'),
-                  _buildStoresGrid(context, state.stores),
+                  // --- UX Improvement: Show empty state if no stores are available ---
+                  if (state.stores.isEmpty)
+                    _buildEmptyState('فروشگاهی یافت نشد!')
+                  else
+                    _buildStoresGrid(context, state.stores),
                 ],
               ),
             );
@@ -70,12 +86,12 @@ class _StoreListPageState extends State<StoreListPage> {
     );
   }
 
-  // --- AppBar با قابلیت شناور شدن ---
+  // --- AppBar with a floating search bar ---
   SliverAppBar _buildSliverAppBar(BuildContext context) {
     return SliverAppBar(
-      floating: true, // با اسکرول به بالا ظاهر می‌شود
-      snap: true, // به صورت کامل ظاهر یا پنهان می‌شود
-      pinned: false, // در بالای صفحه ثابت نمی‌ماند
+      floating: true,
+      snap: true,
+      pinned: false,
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.white,
       elevation: 0.5,
@@ -96,6 +112,7 @@ class _StoreListPageState extends State<StoreListPage> {
               borderRadius: BorderRadius.circular(30.0),
             ),
             child: const TextField(
+              // TODO: Implement search functionality
               decoration: InputDecoration(
                 hintText: 'جستجو در میان رستوران‌ها...',
                 hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
@@ -110,6 +127,7 @@ class _StoreListPageState extends State<StoreListPage> {
     );
   }
 
+  // --- A reusable widget for section titles ---
   SliverToBoxAdapter _buildSectionTitle(String title) {
     return SliverToBoxAdapter(
       child: Padding(
@@ -122,7 +140,147 @@ class _StoreListPageState extends State<StoreListPage> {
     );
   }
 
-  // --- طراحی جدید و جذاب برای دسته‌بندی‌ها ---
+  // --- UX Improvement: A dedicated widget for the loading skeleton ---
+  Widget _buildLoadingSkeleton() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[200]!,
+      highlightColor: Colors.grey[100]!,
+      child: CustomScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        slivers: [
+          _buildSliverAppBar(context),
+          _buildSectionTitle('دسته‌بندی‌ها'),
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 110.0,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                itemCount: 5,
+                itemBuilder: (context, index) => Padding(
+                  padding: const EdgeInsets.only(left: 16.0),
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 70,
+                        height: 70,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(width: 50, height: 10, color: Colors.white),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          _buildSectionTitle('پیشنهادهای ویژه'),
+          SliverToBoxAdapter(
+            child: Container(
+              height: 160,
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+          _buildSectionTitle('همه فروشگاه‌ها'),
+          SliverPadding(
+            padding: const EdgeInsets.all(16.0),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16.0,
+                mainAxisSpacing: 16.0,
+                childAspectRatio: 0.82,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                childCount: 4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- UX Improvement: A dedicated widget for showing errors ---
+  Widget _buildErrorWidget({
+    required String message,
+    required VoidCallback onRetry,
+  }) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.cloud_off_rounded, color: Colors.grey[400], size: 80),
+            const SizedBox(height: 20),
+            Text(
+              'خطایی رخ داد',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.refresh),
+              label: const Text('تلاش مجدد'),
+              onPressed: onRetry,
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Theme.of(context).primaryColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- UX Improvement: A widget for empty states ---
+  SliverFillRemaining _buildEmptyState(String message) {
+    return SliverFillRemaining(
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.storefront_outlined, size: 60, color: Colors.grey[300]),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- Categories with added animations and tap feedback ---
   SliverToBoxAdapter _buildCategoriesSliver() {
     final List<Category> categories = [
       Category(
@@ -150,48 +308,78 @@ class _StoreListPageState extends State<StoreListPage> {
     return SliverToBoxAdapter(
       child: SizedBox(
         height: 110.0,
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          itemCount: categories.length,
-          itemBuilder: (context, index) {
-            final category = categories[index];
-            return Padding(
-              padding: const EdgeInsets.only(left: 16.0),
-              child: Column(
-                children: [
-                  Container(
-                    width: 70,
-                    height: 70,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.primary.withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Image.network(
-                      category.imageUrl,
-                      fit: BoxFit.contain,
+        child: AnimationLimiter(
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            itemCount: categories.length,
+            itemBuilder: (context, index) {
+              final category = categories[index];
+              return AnimationConfiguration.staggeredList(
+                position: index,
+                duration: const Duration(milliseconds: 375),
+                child: SlideAnimation(
+                  verticalOffset: 50.0,
+                  child: FadeInAnimation(
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 16.0),
+                      child: Column(
+                        children: [
+                          // --- UX Improvement: Use InkWell for tap feedback ---
+                          SizedBox(
+                            width: 70,
+                            height: 70,
+                            child: Material(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.08),
+                              borderRadius: BorderRadius.circular(16),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: () {
+                                  // TODO: Navigate to category page or filter stores
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  // --- UX Improvement: Use CachedNetworkImage ---
+                                  child: CachedNetworkImage(
+                                    imageUrl: category.imageUrl,
+                                    placeholder: (c, u) => Center(
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    ),
+                                    errorWidget: (c, u, e) => Icon(
+                                      Icons.fastfood_outlined,
+                                      color: Colors.grey[400],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            category.name,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    category.name,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
   }
 
+  // --- Promotions carousel ---
   SliverToBoxAdapter _buildPromotionsSliver(
     BuildContext context,
     List<PromotionEntity> promotions,
@@ -213,7 +401,18 @@ class _StoreListPageState extends State<StoreListPage> {
                   margin: const EdgeInsets.symmetric(horizontal: 6.0),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16.0),
-                    child: Image.network(promotion.imageUrl, fit: BoxFit.cover),
+                    // --- UX Improvement: Use CachedNetworkImage ---
+                    child: CachedNetworkImage(
+                      imageUrl: promotion.imageUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (c, u) => Container(color: Colors.grey[200]),
+                      errorWidget: (c, u, e) => Center(
+                        child: Icon(
+                          Icons.broken_image,
+                          color: Colors.grey[400],
+                        ),
+                      ),
+                    ),
                   ),
                 );
               },
@@ -235,6 +434,7 @@ class _StoreListPageState extends State<StoreListPage> {
     );
   }
 
+  // --- Stores grid with animations ---
   Widget _buildStoresGrid(BuildContext context, List<StoreEntity> stores) {
     final screenWidth = MediaQuery.of(context).size.width;
     final crossAxisCount = (screenWidth > 600) ? 3 : 2;
@@ -266,36 +466,37 @@ class _StoreListPageState extends State<StoreListPage> {
     );
   }
 
+  // --- Store card with improved visuals and tap feedback ---
   Widget _buildStoreCard(BuildContext context, StoreEntity store) {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) =>
-              ProductListPage(storeId: store.id, storeName: store.name),
-        ),
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade200, width: 1.0),
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200, width: 1.0),
+      clipBehavior: Clip
+          .antiAlias, // Ensures the InkWell ripple stays within the card's rounded borders
+      child: InkWell(
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                ProductListPage(storeId: store.id, storeName: store.name),
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               flex: 5,
-              child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12),
-                ),
-                child: Image.network(
-                  store.logoUrl ?? '',
-                  fit: BoxFit.cover,
-                  errorBuilder: (c, e, s) => Center(
-                    child: Icon(Icons.store, color: Colors.grey[300], size: 40),
-                  ),
+              child: CachedNetworkImage(
+                imageUrl: store.logoUrl ?? '',
+                fit: BoxFit.cover,
+                width: double.infinity,
+                placeholder: (context, url) =>
+                    Container(color: Colors.grey[100]),
+                errorWidget: (context, url, error) => Center(
+                  child: Icon(Icons.store, color: Colors.grey[300], size: 40),
                 ),
               ),
             ),
@@ -330,18 +531,26 @@ class _StoreListPageState extends State<StoreListPage> {
                           color: Colors.amber.shade700,
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          store.rating.toString(),
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          ' (${store.ratingCount})',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
+                        // --- UX Improvement: Use RichText for better visual hierarchy ---
+                        RichText(
+                          text: TextSpan(
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.black,
+                              fontFamily: 'Vazirmatn',
+                            ),
+                            children: [
+                              TextSpan(
+                                text: store.rating.toString(),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              TextSpan(
+                                text: ' (${store.ratingCount})',
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                            ],
                           ),
                         ),
                         const Spacer(),
