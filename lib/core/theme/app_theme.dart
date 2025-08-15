@@ -22,11 +22,9 @@ class AppTheme {
       colorScheme: const ColorScheme.light(
         primary: _primaryColor,
         secondary: _secondaryColor,
-        background: _backgroundColor,
         surface: _surfaceColor,
         onPrimary: Colors.white, // رنگ متن روی دکمه‌های اصلی
-        onSecondary: Colors.white,
-        onBackground: _secondaryColor, // رنگ متن روی پس‌زمینه
+        onSecondary: Colors.white, // رنگ متن روی پس‌زمینه
         onSurface: _secondaryColor, // رنگ متن روی کارت‌ها
         error: Colors.redAccent,
       ),

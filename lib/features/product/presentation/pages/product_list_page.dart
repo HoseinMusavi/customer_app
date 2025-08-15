@@ -136,7 +136,7 @@ class ProductListPage extends StatelessWidget {
                           children: [
                             if (hasDiscount)
                               Text(
-                                '${product.price.toStringAsFixed(0)}',
+                                product.price.toStringAsFixed(0),
                                 style: textTheme.bodySmall?.copyWith(
                                   decoration: TextDecoration.lineThrough,
                                   color: Colors.grey,

@@ -384,8 +384,9 @@ class _StoreListPageState extends State<StoreListPage> {
     BuildContext context,
     List<PromotionEntity> promotions,
   ) {
-    if (promotions.isEmpty)
+    if (promotions.isEmpty) {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
 
     return SliverToBoxAdapter(
       child: Column(
