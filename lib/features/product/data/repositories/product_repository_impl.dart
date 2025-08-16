@@ -1,5 +1,4 @@
 // lib/features/product/data/repositories/product_repository_impl.dart
-
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failure.dart';
@@ -17,10 +16,10 @@ class ProductRepositoryImpl implements ProductRepository {
     int storeId,
   ) async {
     try {
-      final remoteProducts = await remoteDataSource.getProductsByStore(storeId);
-      return Right(remoteProducts);
-    } on ServerException {
-      return Left(ServerFailure());
+      final products = await remoteDataSource.getProductsByStoreId(storeId);
+      return Right(products);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
     }
   }
 }

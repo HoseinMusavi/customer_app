@@ -7,7 +7,7 @@ class StoreModel extends StoreEntity {
     required super.id,
     required super.name,
     required super.address,
-    super.logoUrl,
+    required super.logoUrl,
     required super.isOpen,
     required super.rating,
     required super.ratingCount,
@@ -17,21 +17,22 @@ class StoreModel extends StoreEntity {
 
   factory StoreModel.fromJson(Map<String, dynamic> json) {
     return StoreModel(
-      id: json['store_id'],
-      name: json['name'],
-      address: json['address'],
-      logoUrl: json['logo_url'],
-      isOpen: json['is_open'],
-      rating: (json['rating'] as num).toDouble(),
-      ratingCount: json['rating_count'],
-      cuisineType: json['cuisine_type'],
-      deliveryTimeEstimate: json['delivery_time_estimate'],
+      id: json['id'] as int,
+      name: json['name'] as String,
+      address: json['address'] as String? ?? 'آدرس نامشخص',
+      logoUrl: json['logo_url'] as String,
+      isOpen: json['is_open'] as bool? ?? true,
+      rating: (json['rating'] as num?)?.toDouble() ?? 4.5,
+      ratingCount: json['rating_count'] as int? ?? 0,
+      cuisineType: json['cuisine_type'] as String? ?? 'فست فود',
+      deliveryTimeEstimate:
+          json['delivery_time_estimate'] as String? ?? '۲۰-۳۰ دقیقه',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'store_id': id,
+      'id': id,
       'name': name,
       'address': address,
       'logo_url': logoUrl,

@@ -1,10 +1,9 @@
+// lib/features/cart/presentation/pages/cart_page.dart
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
-// <<< CHANGE START: افزودن ایمپورت برای ویجت تصویر امن
 import '../../../../core/widgets/custom_network_image.dart';
-// <<< CHANGE END
 import '../../domain/entities/cart_entity.dart';
 import '../../domain/entities/cart_item_entity.dart';
 import '../bloc/cart_bloc.dart';
@@ -38,9 +37,11 @@ class CartPage extends StatelessWidget {
               return _buildEmptyCartView(context);
             }
 
+            // --- ✨ FIX: Handle possible null storeName ---
             final groupedByStore = groupBy(
               state.cart.items,
-              (item) => item.product.storeName,
+              (CartItemEntity item) =>
+                  item.product.storeName ?? 'فروشگاه نامشخص',
             );
 
             return Column(
@@ -95,7 +96,6 @@ class CartPage extends StatelessWidget {
   }
 }
 
-// --- ویجت کارت برای هر فروشگاه ---
 class _StoreCartCard extends StatelessWidget {
   final String storeName;
   final List<CartItemEntity> items;
@@ -144,7 +144,6 @@ class _StoreCartCard extends StatelessWidget {
   }
 }
 
-// --- ویجت هر ردیف محصول در سبد خرید ---
 class _CartItemRow extends StatelessWidget {
   final CartItemEntity item;
 
@@ -154,12 +153,12 @@ class _CartItemRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    final finalPrice = item.product.discountPrice ?? item.product.price;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
       child: Row(
         children: [
-          // <<< CHANGE START: جایگزینی Image.network با ویجت امن
           ClipRRect(
             borderRadius: BorderRadius.circular(8.0),
             child: CustomNetworkImage(
@@ -168,7 +167,6 @@ class _CartItemRow extends StatelessWidget {
               height: 50,
             ),
           ),
-          // <<< CHANGE END
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -177,7 +175,7 @@ class _CartItemRow extends StatelessWidget {
                 Text(item.product.name, style: textTheme.titleMedium),
                 const SizedBox(height: 4),
                 Text(
-                  '${item.product.price.toStringAsFixed(0)} تومان',
+                  '${finalPrice.toStringAsFixed(0)} تومان',
                   style: textTheme.bodyMedium?.copyWith(
                     color: Colors.grey[600],
                   ),
@@ -246,7 +244,6 @@ class _CartItemRow extends StatelessWidget {
   }
 }
 
-// --- ویجت کارت جمع کل و پرداخت ---
 class _TotalsCard extends StatelessWidget {
   final CartEntity cart;
   const _TotalsCard({required this.cart});
@@ -280,11 +277,7 @@ class _TotalsCard extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: cart.items.isEmpty
-                      ? null
-                      : () {
-                          // Navigate to checkout page
-                        },
+                  onPressed: cart.items.isEmpty ? null : () {},
                   child: const Text('ادامه و پرداخت'),
                 ),
               ),

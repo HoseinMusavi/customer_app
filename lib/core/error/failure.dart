@@ -1,13 +1,22 @@
+// lib/core/error/failure.dart
+
 import 'package:equatable/equatable.dart';
 
 abstract class Failure extends Equatable {
-  const Failure([List properties = const <dynamic>[]]);
+  const Failure();
 
   @override
   List<Object> get props => [];
 }
 
-// انواع خطاهای عمومی
-class ServerFailure extends Failure {}
+// General failures
+class ServerFailure extends Failure {
+  final String message;
+
+  const ServerFailure({this.message = 'An unexpected error occurred.'});
+
+  @override
+  List<Object> get props => [message];
+}
 
 class CacheFailure extends Failure {}

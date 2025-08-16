@@ -8,40 +8,46 @@ import '../../domain/entities/cart_entity.dart';
 import '../../domain/repositories/cart_repository.dart';
 import '../datasources/cart_remote_datasource.dart';
 
+// This class now implements the real logic
 class CartRepositoryImpl implements CartRepository {
   final CartRemoteDataSource remoteDataSource;
 
   CartRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, CartEntity>> getCart() async {
-    try {
-      final remoteCart = await remoteDataSource.getCart();
-      return Right(remoteCart);
-    } on ServerException {
-      return Left(ServerFailure());
-    }
-  }
-
-  @override
   Future<Either<Failure, CartEntity>> addProductToCart(
     ProductEntity product,
   ) async {
     try {
-      final remoteCart = await remoteDataSource.addProductToCart(product.id);
-      return Right(remoteCart);
-    } on ServerException {
-      return Left(ServerFailure());
+      await remoteDataSource.addProductToCart(product.id);
+      // After adding, fetch the whole cart again to ensure consistency
+      return getCart();
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
     }
   }
 
-  // پیاده‌سازی remove و update نیز به همین شکل خواهد بود
+  @override
+  Future<Either<Failure, CartEntity>> getCart() async {
+    try {
+      final cartItems = await remoteDataSource.getCartItems();
+      // The entity list is converted from the model list
+      return Right(CartEntity(items: cartItems));
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    }
+  }
+
   @override
   Future<Either<Failure, CartEntity>> removeProductFromCart(
     ProductEntity product,
   ) async {
-    // ...
-    throw UnimplementedError();
+    try {
+      await remoteDataSource.removeProductFromCart(product.id);
+      return getCart();
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    }
   }
 
   @override
@@ -49,7 +55,11 @@ class CartRepositoryImpl implements CartRepository {
     ProductEntity product,
     int newQuantity,
   ) async {
-    // ...
-    throw UnimplementedError();
+    try {
+      await remoteDataSource.updateProductQuantity(product.id, newQuantity);
+      return getCart();
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
+    }
   }
 }

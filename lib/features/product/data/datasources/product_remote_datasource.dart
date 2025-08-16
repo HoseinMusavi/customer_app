@@ -1,29 +1,31 @@
 // lib/features/product/data/datasources/product_remote_datasource.dart
-
-import 'package:dio/dio.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/error/exceptions.dart';
 import '../models/product_model.dart';
 
 abstract class ProductRemoteDataSource {
-  /// این متد باید به endpoint مربوط به دریافت لیست محصولات یک فروشگاه خاص وصل شود.
-  Future<List<ProductModel>> getProductsByStore(int storeId);
+  Future<List<ProductModel>> getProductsByStoreId(int storeId);
 }
 
 class ProductRemoteDataSourceImpl implements ProductRemoteDataSource {
-  final Dio dio;
+  final SupabaseClient supabaseClient;
 
-  ProductRemoteDataSourceImpl({required this.dio});
+  ProductRemoteDataSourceImpl({required this.supabaseClient});
 
   @override
-  Future<List<ProductModel>> getProductsByStore(int storeId) async {
-    // بر اساس پروپوزال، این endpoint لیست محصولات یک فروشگاه را برمی‌گرداند
-    final response = await dio.get('/api/store/$storeId/products/');
+  Future<List<ProductModel>> getProductsByStoreId(int storeId) async {
+    try {
+      final response = await supabaseClient
+          .from('products')
+          .select()
+          .eq('store_id', storeId); // Filter by store_id
 
-    if (response.statusCode == 200) {
-      final List<dynamic> jsonList = response.data;
-      return jsonList.map((json) => ProductModel.fromJson(json)).toList();
-    } else {
-      throw ServerException();
+      final products = (response as List)
+          .map((data) => ProductModel.fromJson(data))
+          .toList();
+      return products;
+    } catch (e) {
+      throw ServerException(message: 'Could not fetch products.');
     }
   }
 }

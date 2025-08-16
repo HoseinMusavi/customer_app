@@ -5,19 +5,19 @@ import 'package:equatable/equatable.dart';
 class ProductEntity extends Equatable {
   final int id;
   final int storeId;
-  final String storeName;
+  final String? storeName; // <<< CHANGE: Made this nullable (optional)
   final String name;
   final String description;
   final double price;
-  final double? discountPrice; // قیمت با تخفیف که می‌تواند وجود نداشته باشد
+  final double? discountPrice;
   final String imageUrl;
-  final String category; // دسته‌بندی محصول (مثلا: پیتزا، ساندویچ)
-  final bool isAvailable; // وضعیت موجودی
+  final String category;
+  final bool isAvailable;
 
   const ProductEntity({
     required this.id,
     required this.storeId,
-    required this.storeName,
+    this.storeName, // <<< CHANGE: No longer required
     required this.name,
     required this.description,
     required this.price,
@@ -27,20 +27,35 @@ class ProductEntity extends Equatable {
     required this.isAvailable,
   });
 
-  // یک getter برای نمایش قیمت نهایی (با تخفیف یا بدون تخفیف)
   double get finalPrice => discountPrice ?? price;
 
   @override
-  List<Object?> get props => [
-    id,
-    storeId,
-    storeName,
-    name,
-    description,
-    price,
-    discountPrice,
-    imageUrl,
-    category,
-    isAvailable,
-  ];
+  List<Object?> get props => [id, storeId, name];
+
+  // Helper method to create a copy with new values
+  ProductEntity copyWith({
+    int? id,
+    int? storeId,
+    String? storeName,
+    String? name,
+    String? description,
+    double? price,
+    double? discountPrice,
+    String? imageUrl,
+    String? category,
+    bool? isAvailable,
+  }) {
+    return ProductEntity(
+      id: id ?? this.id,
+      storeId: storeId ?? this.storeId,
+      storeName: storeName ?? this.storeName,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      price: price ?? this.price,
+      discountPrice: discountPrice ?? this.discountPrice,
+      imageUrl: imageUrl ?? this.imageUrl,
+      category: category ?? this.category,
+      isAvailable: isAvailable ?? this.isAvailable,
+    );
+  }
 }

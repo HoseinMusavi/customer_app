@@ -1,26 +1,51 @@
 // lib/core/di/service_locator.dart
 
+import 'package:customer_app/features/cart/data/datasources/cart_remote_datasource.dart';
+import 'package:customer_app/features/promotion/data/repositories/promotion_repository_impl.dart';
+
+import 'package:customer_app/features/cart/data/repositories/cart_repository_impl.dart';
+import 'package:customer_app/features/product/data/datasources/product_remote_datasource.dart';
+import 'package:customer_app/features/promotion/data/datasources/promotion_remote_datasource.dart';
+import 'package:customer_app/features/store/data/datasources/store_remote_datasource.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
-import '../../features/cart/data/repositories/fake_cart_repository_impl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+// --- Auth Feature ---
+import '../../features/auth/data/datasources/auth_remote_datasource.dart';
+import '../../features/auth/data/repositories/auth_repository_impl.dart';
+import '../../features/auth/domain/repositories/auth_repository.dart';
+import '../../features/auth/domain/usecases/login_usecase.dart';
+import '../../features/auth/domain/usecases/signup_usecase.dart';
+import '../../features/auth/presentation/cubit/auth_cubit.dart';
+
+// --- Cart Feature ---
 import '../../features/cart/domain/repositories/cart_repository.dart';
 import '../../features/cart/domain/usecases/add_product_to_cart_usecase.dart';
 import '../../features/cart/domain/usecases/get_cart_usecase.dart';
 import '../../features/cart/domain/usecases/remove_product_from_cart_usecase.dart';
 import '../../features/cart/domain/usecases/update_product_quantity_usecase.dart';
 import '../../features/cart/presentation/bloc/cart_bloc.dart';
+
+// --- Customer Feature ---
 import '../../features/customer/data/repositories/fake_customer_repository_impl.dart';
 import '../../features/customer/domain/repositories/customer_repository.dart';
 import '../../features/customer/domain/usecases/get_customer_details.dart';
 import '../../features/customer/presentation/cubit/customer_cubit.dart';
-import '../../features/product/data/repositories/fake_product_repository_impl.dart';
+
+// --- Product Feature ---
+import '../../features/product/data/repositories/product_repository_impl.dart';
 import '../../features/product/domain/repositories/product_repository.dart';
 import '../../features/product/domain/usecases/get_products_by_store_usecase.dart';
 import '../../features/product/presentation/cubit/product_cubit.dart';
-import '../../features/promotion/data/repositories/fake_promotion_repository_impl.dart';
+
+// --- Promotion Feature ---
+
 import '../../features/promotion/domain/repositories/promotion_repository.dart';
 import '../../features/promotion/domain/usecases/get_promotions_usecase.dart';
-import '../../features/store/data/repositories/fake_store_repository_impl.dart';
+
+// --- Store Feature ---
+import '../../features/store/data/repositories/store_repository_impl.dart';
 import '../../features/store/domain/repositories/store_repository.dart';
 import '../../features/store/domain/usecases/get_stores_usecase.dart';
 import '../../features/store/presentation/cubit/dashboard_cubit.dart';
@@ -28,13 +53,65 @@ import '../../features/store/presentation/cubit/dashboard_cubit.dart';
 final sl = GetIt.instance;
 
 Future<void> init() async {
-  // BLoCs & Cubits
-  sl.registerFactory(() => CustomerCubit(getCustomerDetails: sl()));
-  sl.registerFactory(() => ProductCubit(getProductsByStoreUsecase: sl()));
+  // #region External Dependencies
+  sl.registerLazySingleton(() => Supabase.instance.client);
+  sl.registerLazySingleton(
+    () => Dio(BaseOptions(baseUrl: 'https://fake-api.com')),
+  );
+  // #endregion
+
+  // #region Features
+
+  // --- Auth ---
+  sl.registerFactory(() => AuthCubit(signupUseCase: sl(), loginUseCase: sl()));
+  sl.registerLazySingleton(() => SignupUseCase(sl()));
+  sl.registerLazySingleton(() => LoginUseCase(sl()));
+  sl.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(remoteDataSource: sl()),
+  );
+  sl.registerLazySingleton<AuthRemoteDataSource>(
+    () => AuthRemoteDataSourceImpl(supabaseClient: sl()),
+  );
+
+  // --- Dashboard / Store ---
   sl.registerFactory(
     () => DashboardCubit(getStoresUsecase: sl(), getPromotionsUsecase: sl()),
-  ); // <-- Cubit جدید
+  );
+  sl.registerLazySingleton(() => GetStoresUsecase(sl()));
+  sl.registerLazySingleton<StoreRepository>(
+    () => StoreRepositoryImpl(remoteDataSource: sl()),
+  );
+  sl.registerLazySingleton<StoreRemoteDataSource>(
+    () => StoreRemoteDataSourceImpl(supabaseClient: sl()),
+  );
 
+  // --- Customer ---
+  sl.registerFactory(() => CustomerCubit(getCustomerDetails: sl()));
+  sl.registerLazySingleton(() => GetCustomerDetails(sl()));
+  sl.registerLazySingleton<CustomerRepository>(
+    () => FakeCustomerRepositoryImpl(),
+  );
+
+  // --- Product ---
+  sl.registerFactory(() => ProductCubit(getProductsByStoreUsecase: sl()));
+  sl.registerLazySingleton(() => GetProductsByStoreUsecase(sl()));
+  sl.registerLazySingleton<ProductRepository>(
+    () => ProductRepositoryImpl(remoteDataSource: sl()),
+  );
+  sl.registerLazySingleton<ProductRemoteDataSource>(
+    () => ProductRemoteDataSourceImpl(supabaseClient: sl()),
+  );
+
+  // --- Promotion ---
+  sl.registerLazySingleton(() => GetPromotionsUsecase(sl()));
+  sl.registerLazySingleton<PromotionRepository>(
+    () => FakePromotionRepositoryImpl(remoteDataSource: sl()),
+  );
+  sl.registerLazySingleton<PromotionRemoteDataSource>(
+    () => PromotionRemoteDataSourceImpl(supabaseClient: sl()),
+  );
+
+  // --- Cart ---
   sl.registerLazySingleton(
     () => CartBloc(
       getCart: sl(),
@@ -43,34 +120,18 @@ Future<void> init() async {
       updateProductQuantity: sl(),
     ),
   );
-
-  // UseCases
-  sl.registerLazySingleton(() => GetCustomerDetails(sl()));
-  sl.registerLazySingleton(() => GetStoresUsecase(sl()));
-  sl.registerLazySingleton(() => GetProductsByStoreUsecase(sl()));
-  sl.registerLazySingleton(
-    () => GetPromotionsUsecase(sl()),
-  ); // <-- UseCase جدید
   sl.registerLazySingleton(() => GetCartUsecase(sl()));
   sl.registerLazySingleton(() => AddProductToCartUsecase(sl()));
   sl.registerLazySingleton(() => RemoveProductFromCartUsecase(sl()));
   sl.registerLazySingleton(() => UpdateProductQuantityUsecase(sl()));
+  // ‼️ CHANGE: Switched from Fake to real implementation ‼️
+  sl.registerLazySingleton<CartRepository>(
+    () => CartRepositoryImpl(remoteDataSource: sl()),
+  );
+  // ‼️ NEW: Added the real data source for Cart ‼️
+  sl.registerLazySingleton<CartRemoteDataSource>(
+    () => CartRemoteDataSourceImpl(supabaseClient: sl()),
+  );
 
-  // Repositories
-  sl.registerLazySingleton<CustomerRepository>(
-    () => FakeCustomerRepositoryImpl(),
-  );
-  sl.registerLazySingleton<StoreRepository>(() => FakeStoreRepositoryImpl());
-  sl.registerLazySingleton<ProductRepository>(
-    () => FakeProductRepositoryImpl(),
-  );
-  sl.registerLazySingleton<CartRepository>(() => FakeCartRepositoryImpl());
-  sl.registerLazySingleton<PromotionRepository>(
-    () => FakePromotionRepositoryImpl(),
-  ); // <-- Repository جدید
-
-  // External
-  sl.registerLazySingleton(
-    () => Dio(BaseOptions(baseUrl: 'https://fake-api.com')),
-  );
+  // #endregion
 }

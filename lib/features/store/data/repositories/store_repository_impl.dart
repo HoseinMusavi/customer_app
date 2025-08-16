@@ -5,22 +5,23 @@ import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failure.dart';
 import '../../domain/entities/store_entity.dart';
 import '../../domain/repositories/store_repository.dart';
-import '../datasources/store_remote_datasource.dart';
+import '../datasources/store_remote_datasource.dart'; // ‼️ CHANGE IMPORT
 
 class StoreRepositoryImpl implements StoreRepository {
+  // --- ‼️ CHANGE: Use the real remote data source ---
   final StoreRemoteDataSource remoteDataSource;
 
+  // --- ‼️ CHANGE: Update the constructor ---
   StoreRepositoryImpl({required this.remoteDataSource});
 
   @override
   Future<Either<Failure, List<StoreEntity>>> getStores() async {
     try {
-      final remoteStores = await remoteDataSource.getStores();
-      // DataSource یک List<StoreModel> را برمی‌گرداند که با List<StoreEntity> سازگار است.
-      return Right(remoteStores);
-    } on ServerException {
-      // اگر DataSource خطای سرور پرتاب کند، ما آن را به یک ServerFailure تبدیل می‌کنیم.
-      return Left(ServerFailure());
+      // --- ‼️ CHANGE: Call the method from the real data source ---
+      final stores = await remoteDataSource.getAllStores();
+      return Right(stores);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message));
     }
   }
 }

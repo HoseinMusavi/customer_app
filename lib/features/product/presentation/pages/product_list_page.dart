@@ -1,12 +1,11 @@
-import 'package:customer_app/features/product/domain/entities/product_entity.dart'
-    as cart_entity;
+// lib/features/product/presentation/pages/product_list_page.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../../core/di/service_locator.dart';
 import '../../../../core/widgets/custom_network_image.dart';
-
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 import '../../domain/entities/product_entity.dart';
 import '../cubit/product_cubit.dart';
@@ -57,15 +56,7 @@ class ProductListPage extends StatelessWidget {
   Widget _buildProductListItem(BuildContext context, ProductEntity product) {
     final textTheme = Theme.of(context).textTheme;
     final hasDiscount = product.discountPrice != null;
-
-    // خط دیباگ برای بررسی آدرس عکس
-    print('DEBUG: Loading Image from URL: ${product.imageUrl}');
-
-    // <<< CHANGE START: چک کردن معتبر بودن آدرس URL
-    final bool isUrlValid =
-        product.imageUrl.isNotEmpty &&
-        Uri.tryParse(product.imageUrl)?.hasAbsolutePath == true;
-    // <<< CHANGE END
+    final finalPrice = product.discountPrice ?? product.price;
 
     return Opacity(
       opacity: product.isAvailable ? 1.0 : 0.6,
@@ -85,25 +76,14 @@ class ProductListPage extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // <<< CHANGE START: نمایش تصویر فقط در صورت معتبر بودن آدرس
             SizedBox(
               width: 90,
               height: 90,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8.0),
-                child: isUrlValid
-                    ? CustomNetworkImage(imageUrl: product.imageUrl)
-                    : Container(
-                        // نمایش جایگزین در صورت نامعتبر بودن آدرس
-                        color: Colors.grey[200],
-                        child: Icon(
-                          Icons.image_not_supported_outlined,
-                          color: Colors.grey[400],
-                        ),
-                      ),
+                child: CustomNetworkImage(imageUrl: product.imageUrl),
               ),
             ),
-            // <<< CHANGE END
             const SizedBox(width: 12),
             Expanded(
               child: SizedBox(
@@ -143,7 +123,7 @@ class ProductListPage extends StatelessWidget {
                                 ),
                               ),
                             Text(
-                              '${product.finalPrice.toStringAsFixed(0)} تومان',
+                              '${finalPrice.toStringAsFixed(0)} تومان',
                               style: textTheme.titleSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Theme.of(context).colorScheme.primary,
@@ -154,21 +134,15 @@ class ProductListPage extends StatelessWidget {
                         if (product.isAvailable)
                           InkWell(
                             onTap: () {
-                              final productForCart = cart_entity.ProductEntity(
-                                id: product.id,
-                                name: product.name,
-                                description: product.description,
-                                imageUrl: product.imageUrl,
-                                price: product.price,
-                                discountPrice: product.discountPrice,
-                                storeId: product.storeId,
-                                isAvailable: product.isAvailable,
+                              // --- ✨ FIX: Add storeName to product before adding to cart ---
+                              final productForCart = product.copyWith(
                                 storeName: storeName,
-                                category: product.category,
                               );
+
                               context.read<CartBloc>().add(
                                 CartProductAdded(productForCart),
                               );
+
                               ScaffoldMessenger.of(context)
                                 ..hideCurrentSnackBar()
                                 ..showSnackBar(
