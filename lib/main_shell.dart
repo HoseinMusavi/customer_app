@@ -1,6 +1,7 @@
-// lib/main_shell.dart
-
+import 'package:customer_app/features/customer/presentation/cubit/customer_cubit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart'; // ‼️ ایمپورت Bloc
+import 'core/di/service_locator.dart'; // ‼️ ایمپورت Service Locator
 import 'features/cart/presentation/pages/cart_page.dart';
 import 'features/cart/presentation/pages/order_tracking_page.dart';
 import 'features/customer/presentation/pages/customer_profile_page.dart';
@@ -16,11 +17,16 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _pages = <Widget>[
-    StoreListPage(),
-    CartPage(),
-    OrderTrackingPage(),
-    CustomerProfilePage(),
+  // ‼️ تغییر: لیست صفحات را اینجا تعریف می‌کنیم
+  // BlocProvider را به دور CustomerProfilePage اضافه می‌کنیم
+  static final List<Widget> _pages = <Widget>[
+    const StoreListPage(),
+    const CartPage(),
+    const OrderTrackingPage(),
+    BlocProvider(
+      create: (_) => sl<CustomerCubit>()..fetchCustomerDetails(),
+      child: const CustomerProfilePage(),
+    ),
   ];
 
   void _onItemTapped(int index) {
@@ -32,7 +38,6 @@ class _MainShellState extends State<MainShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // بدنه‌ی Scaffold صفحه‌ای است که بر اساس تب انتخاب شده نمایش داده می‌شود
       body: IndexedStack(index: _selectedIndex, children: _pages),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -59,7 +64,6 @@ class _MainShellState extends State<MainShell> {
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        // این تنظیمات برای نمایش صحیح تب‌ها وقتی تعدادشان زیاد است، ضروری است
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Theme.of(context).colorScheme.primary,
         unselectedItemColor: Colors.grey[600],

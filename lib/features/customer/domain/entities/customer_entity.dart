@@ -1,16 +1,15 @@
-// lib/features/customer/domain/entities/customer_entity.dart
-
 import 'package:equatable/equatable.dart';
-import 'address_entity.dart'; // ایمپورت آدرس
+
+import 'address_entity.dart';
 
 class CustomerEntity extends Equatable {
-  final int id;
+  final String id;
   final String fullName;
   final String email;
   final String phone;
   final String? avatarUrl;
-  final List<AddressEntity> addresses; // لیست آدرس‌های مشتری
-  final int? defaultAddressId; // شناسه آدرس پیش‌فرض
+  final List<AddressEntity> addresses;
+  final int? defaultAddressId;
 
   const CustomerEntity({
     required this.id,
@@ -18,7 +17,7 @@ class CustomerEntity extends Equatable {
     required this.email,
     required this.phone,
     this.avatarUrl,
-    this.addresses = const [], // مقدار پیش‌فرض، لیست خالی
+    this.addresses = const [],
     this.defaultAddressId,
   });
 

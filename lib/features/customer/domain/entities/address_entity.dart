@@ -1,10 +1,9 @@
-// lib/features/customer/domain/entities/address_entity.dart
 import 'package:equatable/equatable.dart';
 
 class AddressEntity extends Equatable {
   final int id;
-  final String title; // مثلا: خانه، محل کار
-  final String fullAddress; // آدرس کامل متنی
+  final String title;
+  final String fullAddress;
   final String postalCode;
   final String city;
 

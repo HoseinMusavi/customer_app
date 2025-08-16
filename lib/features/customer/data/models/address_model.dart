@@ -1,22 +1,27 @@
-// lib/features/customer/data/models/address_model.dart
 import '../../domain/entities/address_entity.dart';
 
 class AddressModel extends AddressEntity {
   const AddressModel({
-    required super.id,
-    required super.title,
-    required super.fullAddress,
-    required super.postalCode,
-    required super.city,
-  });
+    required int id,
+    required String title,
+    required String fullAddress,
+    required String postalCode,
+    required String city,
+  }) : super(
+         id: id,
+         title: title,
+         fullAddress: fullAddress,
+         postalCode: postalCode,
+         city: city,
+       );
 
   factory AddressModel.fromJson(Map<String, dynamic> json) {
     return AddressModel(
-      id: json['id'],
-      title: json['title'],
-      fullAddress: json['full_address'],
-      postalCode: json['postal_code'],
-      city: json['city'],
+      id: json['id'] as int,
+      title: json['title'] as String,
+      fullAddress: json['full_address'] as String,
+      postalCode: json['postal_code'] as String,
+      city: json['city'] as String,
     );
   }
 

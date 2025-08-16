@@ -48,6 +48,7 @@ dependencies:
   smooth_page_indicator: ^1.2.1
   cached_network_image: ^3.4.1
   supabase_flutter: ^2.9.1
+  image_picker: ^1.2.0
 
 dev_dependencies:
   flutter_test:
