@@ -1,13 +1,11 @@
 import 'dart:io';
-
-import 'package:flutter/material.dart';
-
 import 'package:bloc/bloc.dart';
 import 'package:customer_app/core/usecase/usecase.dart';
 import 'package:customer_app/features/customer/domain/entities/customer_entity.dart';
 import 'package:customer_app/features/customer/domain/usecases/get_customer_details.dart';
 import 'package:customer_app/features/customer/domain/usecases/update_customer_profile.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 part 'customer_state.dart';
@@ -22,7 +20,26 @@ class CustomerCubit extends Cubit<CustomerState> {
   }) : super(CustomerInitial());
 
   Future<void> fetchCustomerDetails() async {
-    // ... (این متد بدون تغییر باقی می‌ماند)
+    debugPrint(
+      "✅ [Cubit] -> fetchCustomerDetails: شروع دریافت اطلاعات پروفایل.",
+    );
+    emit(CustomerLoading());
+    final failureOrCustomer = await getCustomerDetailsUseCase(NoParams());
+
+    failureOrCustomer.fold(
+      (failure) {
+        debugPrint(
+          "❌ [Cubit] -> fetchCustomerDetails: دریافت اطلاعات ناموفق بود. خطا: ${failure.toString()}",
+        );
+        emit(CustomerError(failure.toString()));
+      },
+      (customer) {
+        debugPrint(
+          "✅ [Cubit] -> fetchCustomerDetails: اطلاعات با موفقیت دریافت شد. نمایش پروفایل.",
+        );
+        emit(CustomerLoaded(customer));
+      },
+    );
   }
 
   Future<void> saveProfile({
@@ -35,15 +52,18 @@ class CustomerCubit extends Cubit<CustomerState> {
 
     final user = Supabase.instance.client.auth.currentUser;
     if (user == null) {
-      debugPrint("❌ [Cubit] -> saveProfile: خطا! کاربر احراز هویت نشده است.");
-      emit(const CustomerError('کاربر احراز هویت نشده است'));
+      emit(const CustomerError('User not authenticated'));
       return;
     }
 
-    final currentState = state;
+    // اگر در حالت خطا (ساخت پروفایل جدید) هستیم، اطلاعات قبلی وجود ندارد
+    // در غیر این صورت (ویرایش)، اطلاعات قبلی را نگه می‌داریم
     String? currentAvatarUrl;
+    int? currentDefaultAddressId;
+    final currentState = state;
     if (currentState is CustomerLoaded) {
       currentAvatarUrl = currentState.customer.avatarUrl;
+      currentDefaultAddressId = currentState.customer.defaultAddressId;
     }
 
     final customerData = CustomerEntity(
@@ -52,10 +72,7 @@ class CustomerCubit extends Cubit<CustomerState> {
       email: user.email ?? '',
       phone: phone,
       avatarUrl: currentAvatarUrl,
-    );
-
-    debugPrint(
-      " passo [Cubit] -> saveProfile: اطلاعات برای ارسال به UseCase آماده شد: ${customerData.fullName}",
+      defaultAddressId: currentDefaultAddressId,
     );
 
     final params = UpdateCustomerParams(
@@ -67,14 +84,12 @@ class CustomerCubit extends Cubit<CustomerState> {
     failureOrSuccess.fold(
       (failure) {
         debugPrint(
-          "❌ [Cubit] -> saveProfile: عملیات ناموفق بود. خطا: $failure",
+          "❌ [Cubit] -> saveProfile: ذخیره ناموفق. خطا: ${failure.toString()}",
         );
-        emit(CustomerError('خطا در ذخیره اطلاعات: ${failure.toString()}'));
+        emit(CustomerError(failure.toString()));
       },
       (updatedCustomer) {
-        debugPrint(
-          "✅ [Cubit] -> saveProfile: پروفایل با موفقیت ذخیره شد. به‌روزرسانی state به CustomerLoaded.",
-        );
+        debugPrint("✅ [Cubit] -> saveProfile: ذخیره موفق. نمایش پروفایل جدید.");
         emit(CustomerLoaded(updatedCustomer));
       },
     );

@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:flutter/foundation.dart';
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failure.dart';
 import '../../domain/entities/customer_entity.dart';
@@ -16,11 +16,30 @@ class CustomerRepositoryImpl implements CustomerRepository {
   @override
   Future<Either<Failure, CustomerEntity>> getCustomerDetails() async {
     try {
+      debugPrint(
+        "✅ [Repository] -> getCustomerDetails: در حال فراخوانی DataSource...",
+      );
       final customerModel = await remoteDataSource.getCustomerDetails();
-      // Note: Address fetching logic is temporarily removed for simplicity.
-      // We will add it back when building the address management feature.
-      return Right(customerModel);
+      final addresses = await remoteDataSource.getAddresses();
+
+      final customerEntity = CustomerEntity(
+        id: customerModel.id,
+        fullName: customerModel.fullName,
+        email: customerModel.email,
+        phone: customerModel.phone,
+        avatarUrl: customerModel.avatarUrl,
+        defaultAddressId: customerModel.defaultAddressId,
+        addresses: addresses,
+      );
+
+      debugPrint(
+        "✅ [Repository] -> getCustomerDetails: داده از DataSource دریافت و به Entity تبدیل شد.",
+      );
+      return Right(customerEntity);
     } on ServerException catch (e) {
+      debugPrint(
+        "❌ [Repository] -> getCustomerDetails: خطای سرور دریافت شد: ${e.message}",
+      );
       return Left(ServerFailure(message: e.message));
     }
   }
@@ -38,19 +57,15 @@ class CustomerRepositoryImpl implements CustomerRepository {
 
       if (imageFile != null) {
         debugPrint(
-          " passo [Repository] -> updateCustomerProfile: عکس جدید شناسایی شد. شروع آپلود...",
+          " passo [Repository] -> updateCustomerProfile: در حال آپلود عکس جدید...",
         );
         avatarUrl = await remoteDataSource.uploadAvatar(imageFile);
         debugPrint(
-          "✅ [Repository] -> updateCustomerProfile: آپلود عکس موفقیت‌آمیز بود. URL: $avatarUrl",
-        );
-      } else {
-        debugPrint(
-          " passo [Repository] -> updateCustomerProfile: عکس جدیدی برای آپلود وجود ندارد.",
+          "✅ [Repository] -> updateCustomerProfile: آپلود عکس موفق بود.",
         );
       }
 
-      final customerModel = CustomerModel(
+      final customerToUpdate = CustomerModel(
         id: customer.id,
         fullName: customer.fullName,
         email: customer.email,
@@ -60,10 +75,10 @@ class CustomerRepositoryImpl implements CustomerRepository {
       );
 
       debugPrint(
-        " passo [Repository] -> updateCustomerProfile: در حال ارسال اطلاعات به DataSource برای ذخیره...",
+        " passo [Repository] -> updateCustomerProfile: در حال ارسال اطلاعات به DataSource...",
       );
       final updatedCustomer = await remoteDataSource.updateCustomerProfile(
-        customerModel,
+        customerToUpdate,
       );
       debugPrint(
         "✅ [Repository] -> updateCustomerProfile: اطلاعات با موفقیت در دیتابیس ذخیره شد.",
@@ -75,11 +90,6 @@ class CustomerRepositoryImpl implements CustomerRepository {
         "❌ [Repository] -> updateCustomerProfile: خطای سرور دریافت شد: ${e.message}",
       );
       return Left(ServerFailure(message: e.message));
-    } catch (e) {
-      debugPrint(
-        "❌ [Repository] -> updateCustomerProfile: خطای پیش‌بینی نشده: ${e.toString()}",
-      );
-      return Left(ServerFailure(message: e.toString()));
     }
   }
 }
